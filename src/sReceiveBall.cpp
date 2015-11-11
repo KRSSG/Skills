@@ -1,8 +1,10 @@
 #include "skillSet.h"
-
+#include <ssl_common/grSimComm.h>
+#include <ssl_common/config.h>
+//write
 namespace Strategy
 {
-   void SkillSet::receiveBall(const SParam &param)
+   gr_Robot_Command SkillSet::receiveBall(const SParam &param, const BeliefState &state, int botID)
    {
      /*
      static int framecount = 1;
@@ -38,5 +40,6 @@ namespace Strategy
      param.BotConfig.finalslope = 0;
      goToPoint(param);
     */
+    return getRobotCommandMessage(botID, 0, 0, 0, 0, false); //temp value to test
    }
 }

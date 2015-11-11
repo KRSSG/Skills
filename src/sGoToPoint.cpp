@@ -4,9 +4,6 @@
 #include <navigation/planners.h>
 #include <navigation/controllers/waypoint.h>
 
-#include <cstdio>
-#include <vector>
-
 using namespace std;
 namespace Strategy
 {

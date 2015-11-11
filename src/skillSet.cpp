@@ -27,19 +27,20 @@ namespace Strategy
     }
 
     // Mapping the skill IDs to their corresponding function pointers
-    // skillList[Kick] = &SkillSet::kick;
-    // skillList[Spin] = &SkillSet::spin;
+    skillList[Spin] = &SkillSet::spin;    
+    skillList[Kick] = &SkillSet::kick;
     skillList[Stop] = &SkillSet::stop;
-    // skillList[Dribble] = &SkillSet::dribble;
-    // skillList[DefendPoint] = &SkillSet::defendPoint;
-    // skillList[Velocity] = &SkillSet::velocity;
-    // skillList[GoToBall] = &SkillSet::goToBall;
+    skillList[Dribble] = &SkillSet::dribble;
+    skillList[Velocity] = &SkillSet::velocity;
+    skillList[GoToBall] = &SkillSet::goToBall;
     skillList[GoToPoint] = &SkillSet::goToPoint;
-    // skillList[DribbleToPoint] = &SkillSet::dribbleToPoint;
-    // skillList[KickToPoint] = &SkillSet::kickToPoint;
-    // skillList[ReceiveBall] = &SkillSet::receiveBall;
-    // skillList[TurnToAngle] = &SkillSet::turnToAngle;
-    // skillList[TurnToPoint] = &SkillSet::turnToPoint;
+    skillList[DefendPoint] = &SkillSet::defendPoint;
+    skillList[DribbleToPoint] = &SkillSet::dribbleToPoint;
+    skillList[ReceiveBall] = &SkillSet::receiveBall;
+    skillList[GoalKeeping] = &SkillSet::goalKeeping;
+    skillList[KickToPoint] = &SkillSet::kickToPoint;
+    skillList[TurnToPoint] = &SkillSet::turnToPoint;
+    skillList[TurnToAngle] = &SkillSet::turnToAngle;
 
     // Initialization check
     for (int sID = 0; sID < MAX_SKILLS; ++sID)

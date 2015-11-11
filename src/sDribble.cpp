@@ -1,9 +1,12 @@
 #include "skillSet.h"
+#include <ssl_common/grSimComm.h>
+#include <ssl_common/config.h>
 
 namespace Strategy
 {
-  void SkillSet::dribble(const SParam& param)
+  gr_Robot_Command SkillSet::dribble(const SParam &param, const BeliefState &state, int botID)
   {
-    comm.sendCommand(botID, 0, 0, 0, 0, true);
+//    Logger::toStdOut("%f\n", state->homeAngle[botID]);
+  	 return getRobotCommandMessage(botID, 0, 0, 0, 0, true);
   } // dribble
 }
