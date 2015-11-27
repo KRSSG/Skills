@@ -30,17 +30,17 @@ namespace Strategy
     enum SkillID
     {
       // Spin,
-      // Kick,
+      Kick,
       Stop,
       // Dribble,
       // Velocity,
-      // GoToBall,
+      GoToBall,
       GoToPoint,
       // DefendPoint,
       // DribbleToPoint,
       // KickToPoint,
       // ReceiveBall,
-      // TurnToPoint,
+      TurnToPoint,
       // TurnToAngle,
       MAX_SKILLS
     };
@@ -115,17 +115,17 @@ namespace Strategy
     //------- List of robot skills -------//
     // gr_Robot_Command spin(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command stop(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command kick(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command kick(const SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command dribble(const SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command velocity(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command goToBall(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command goToBall(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command goToPoint(const SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command defendPoint(const SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command dribbleToPoint(const SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command receiveBall(const SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command goalKeeping(SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command kickToPoint(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command turnToPoint(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command turnToPoint(const SParam& param, const BeliefState &state, int botID);
     // gr_Robot_Command turnToAngle(const SParam& param, const BeliefState &state, int botID);
   private:
     SkillSet(); // private so can't be called.

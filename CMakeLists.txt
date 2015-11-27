@@ -175,7 +175,10 @@ include_directories(include
 # skills
 set(skillsSrc
     src/sStop.cpp
-    src/sGoToPoint.cpp)
+    src/sGoToPoint.cpp
+    src/sGoToBall.cpp
+    src/sTurnToPoint.cpp
+    src/sKick.cpp)
 # sources
 
 set(src 

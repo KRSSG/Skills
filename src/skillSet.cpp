@@ -2,7 +2,7 @@
 #include <cassert>
 #include "skillSet.h"
 // #include "krssg_ssl_msgs/geometry.hpp"
-#include <assert.h>
+// #include <assert.h>
 using namespace std;
 
 namespace Strategy
@@ -27,19 +27,19 @@ namespace Strategy
     }
 
     // Mapping the skill IDs to their corresponding function pointers
-    // skillList[Kick] = &SkillSet::kick;
+    skillList[Kick] = &SkillSet::kick;
     // skillList[Spin] = &SkillSet::spin;
     skillList[Stop] = &SkillSet::stop;
     // skillList[Dribble] = &SkillSet::dribble;
     // skillList[DefendPoint] = &SkillSet::defendPoint;
     // skillList[Velocity] = &SkillSet::velocity;
-    // skillList[GoToBall] = &SkillSet::goToBall;
+    skillList[GoToBall] = &SkillSet::goToBall;
     skillList[GoToPoint] = &SkillSet::goToPoint;
     // skillList[DribbleToPoint] = &SkillSet::dribbleToPoint;
     // skillList[KickToPoint] = &SkillSet::kickToPoint;
     // skillList[ReceiveBall] = &SkillSet::receiveBall;
     // skillList[TurnToAngle] = &SkillSet::turnToAngle;
-    // skillList[TurnToPoint] = &SkillSet::turnToPoint;
+    skillList[TurnToPoint] = &SkillSet::turnToPoint;
 
     // Initialization check
     for (int sID = 0; sID < MAX_SKILLS; ++sID)
