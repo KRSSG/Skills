@@ -5,7 +5,17 @@
 #include <navigation/controllers/waypoint.h>
 #include <cstdio>
 #include <vector>
+#include <navigation/planners.h>
+#include <navigation/controllers/waypoint.h>
+// #include "logger.h"
+// #include "timer.h"
+#include <ssl_common/config.h>
+#include <ssl_common/grSimComm.h>
 
+// static Util::Timer  timer;
+// extern Util::Logger logger;
+
+//Add comm.addLine & comm.addCircle
 #define POINTPREDICTIONFACTOR 2
 
 using namespace std;
@@ -37,6 +47,7 @@ namespace Strategy
         o.radius = 2 * BOT_RADIUS;
         obs.push_back(o);
       }
+
     }
     Vector2D<int> ballfinalpos;
     ballfinalpos.x = state.ballPos.x + (state.ballVel.x / POINTPREDICTIONFACTOR);
@@ -54,62 +65,9 @@ namespace Strategy
                       botID,
                       true);
 
-    
+
 #else
-    vector<ERRT::obstacle> obs;
-    ERRT::obstacle o;
-    for (int i = 0; i < HomeTeam::SIZE; ++i)
-    {
-      if (i != botID)
-      {
-        o.center = Point2D<int>(state.homePos[i].x, state.homePos[i].y);
-        o.radius = 2.2f * BOT_RADIUS;
-        obs.push_back(o);
-        comm.addCircle(o.center.x, o.center.y, o.radius);
-      }
-    }
-
-    for (int i = HomeTeam::SIZE; i < HomeTeam::SIZE + AwayTeam::SIZE; ++i)
-    {
-      o.center = Point2D<int>(state.awayPos[i - HomeTeam::SIZE].x, state.awayPos[i - HomeTeam::SIZE].y);
-      o.radius = 2.2f * BOT_RADIUS;
-      obs.push_back(o);
-      comm.addCircle(o.center.x, o.center.y, o.radius);
-    }
-
-    list<Point2D<int> > waypoints;
-    timer.start();
-    bool found = errt->plan(state.homePos[botID], state.ballPos, obs, 100, waypoints);
-    logger.add("%d us", timer.stopus());
-
-    Vector2D<int> nextWP, nextNWP;
-
-    Point2D<int> point1 = state.homePos[botID];
-    int counter = 0;
-    while (waypoints.empty() == false)
-    {
-      Point2D<int> point2 = waypoints.front();
-      waypoints.pop_front();
-      if (found && waypoints.empty())
-      {
-        comm.addCircle(point2.x, point2.y, 150);  // marking the end point of the path, when one is found
-      }
-      if (counter == 0 && Point2D<int>::distSq(state.homePos[botID], point2) > BOT_RADIUS * BOT_RADIUS * 2)
-      {
-        nextWP = point2;
-        ++counter;
-      }
-      else if (counter == 1)
-      {
-        nextNWP = point2;
-        ++counter;
-      }
-      comm.addCircle(point1.x, point1.y, 30);
-      comm.addLine(point1.x, point1.y, point2.x, point2.y);
-      point1 = point2;
-    }
-
-    return getRobotCommandMessage(botID, 0, 0, 0, 0, false);
+    
 #endif
 
 #if 1

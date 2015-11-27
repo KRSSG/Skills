@@ -1,25 +1,32 @@
 #include "skillSet.h"
-#include "pathPlanners.h"
-#include "beliefState.h"
-#include "fieldConfig.h"
+#include <navigation/planners.h>
+#include <navigation/controllers/waypoint.h>
+#include <ssl_common/config.h>
+#include <ssl_common/grSimComm.h>
+
+using namespace std;
 
 namespace Strategy
 {
-  void SkillSet::goalKeeping(SParam &param)
+  gr_Robot_Command SkillSet::goalKeeping(const SParam& param, const BeliefState &state, int botID)
   {
+    SParam pCopy = param;
     static int framecount = 1;
     static Vector2D<int> ballInitialpos;
+    gr_Robot_Command comm;
+    Vector2D<int> botPos(state.homePos[botID].x, state.homePos[botID].y);
+    Vector2D<int> ballPos(state.ballPos.x, state.ballPos.y);
     Vector2D<int> ballFinalpos, botDestination, point, nextWP, nextNWP;;
 //    if(framecount == 1)
 //    {
-//      ballInitialpos = state->ballPos;
+//      ballInitialpos = ballPos;
 //      framecount++;
 //      return;
 //    }
 //    else if((framecount % 5) == 0)
 //    {
 //      framecount = 1;
-//      ballFinalpos = state->ballPos;
+//      ballFinalpos = ballPos;
 //    }
 //    else
 //    {
@@ -28,52 +35,57 @@ namespace Strategy
 //    }
 
     //if bot moves parallel to x axis (y is constant)
-    botDestination.y = state->homePos[botID].y;
+    botDestination.y = state.homePos[botID].y;
     botDestination.x = ((botDestination.y - ballFinalpos.y) * (ballFinalpos.x - ballInitialpos.x) / (ballFinalpos.y - ballInitialpos.y)) + ballFinalpos.x;
 
     //if bot moves parallel to y axis (x is constant)
-    /*botDestination.x = state->homePos[botID].x;
+    /*botDestination.x = state.homePos[botID].x;
     botDestination.y = (ballFinalpos.y - ballInitialpos.y)/(ballFinalpos.x - ballInitialpos.x)*(botDestination.x - ballFinalpos.x) + ballFinalpos.y;*/
 
-    param.GoalKeepingP.x = botDestination.x;
-    param.GoalKeepingP.y = botDestination.y;
-    param.GoalKeepingP.finalslope = 0;
-//    goToPointFast(param);
+    pCopy.GoalKeepingP.x = botDestination.x;
+    pCopy.GoalKeepingP.y = botDestination.y;
+    pCopy.GoalKeepingP.finalslope = 0;
+//    goToPointFast(pCopy);
 
     float v_x, v_y, v_t;
 
-    point.x = param.GoalKeepingP.x;
-    point.y = param.GoalKeepingP.y;
+    point.x = pCopy.GoalKeepingP.x;
+    point.y = pCopy.GoalKeepingP.y;
 
-    obstacle obs[HomeTeam::SIZE + AwayTeam::SIZE];
-
-    for (int i = 0; i < HomeTeam::SIZE; i++)
+    using Navigation::obstacle;
+    vector<obstacle> obs;
+    obstacle o;
+    for (int i = 0; i < state.homeDetected.size(); ++i)
     {
-      obs[i].x = state->homePos[i].x;
-      obs[i].y = state->homePos[i].y;
-      obs[i].radius = 2 * BOT_RADIUS;
+      o.x = state.homePos[i].x;
+      o.y = state.homePos[i].y;
+      o.radius = 2 * BOT_RADIUS;
+      obs.push_back(o);
     }
 
-    for (int i = HomeTeam::SIZE; i < HomeTeam::SIZE + AwayTeam::SIZE; i++)
+    for (int i = state.homeDetected.size(); i < state.homeDetected.size() + state.awayDetected.size(); ++i)
     {
-      obs[i].x = state->awayPos[i - HomeTeam::SIZE].x;
-      obs[i].y = state->awayPos[i - HomeTeam::SIZE].y;
-      obs[i].radius = 2 * BOT_RADIUS;
+      o.x = state.awayPos[i - state.homeDetected.size()].x;
+      o.y = state.awayPos[i - state.homeDetected.size()].y;
+      o.radius = 2 * BOT_RADIUS;
+      obs.push_back(o);
     }
 
-    pathPlanner->plan(state->homePos[botID],
+    // use the mergescurver planner
+    Navigation::MergeSCurve pathPlanner;
+    pathPlanner.plan(botPos,
                       point,
                       &nextWP,
                       &nextNWP,
-                      obs,
-                      HomeTeam::SIZE + AwayTeam::SIZE,
+                      &obs[0],
+                      obs.size(),
                       botID,
                       true);
 
-    float angle = Vector2D<int>::angle(nextWP, state->homePos[botID]);
-    float dist = Vector2D<int>::dist(point, state->homePos[botID]);
-    float theta = (state->homeAngle[botID] - angle);
-    float rot_theta = (state->homeAngle[botID] - param.GoalKeepingP.finalslope) * (180 / PI);
+    float angle = Vector2D<int>::angle(nextWP, botPos);
+    float dist = Vector2D<int>::dist(point, botPos);
+    float theta = (state.homePos[botID].theta - angle);
+    float rot_theta = (state.homePos[botID].theta - pCopy.GoalKeepingP.finalslope) * (180 / PI);
     if(rot_theta > 0)
     {
       if(rot_theta < DRIBBLER_BALL_ANGLE_RANGE)
@@ -97,11 +109,13 @@ namespace Strategy
 
     if(dist < BOT_BALL_THRESH)
     {
-      comm.sendCommand(botID, 0, 0, 0, 0, false);
+      comm = getRobotCommandMessage(botID, 0, 0, 0, 0, false);
+      return comm;
     }
     else
     {
-      comm.sendCommand(botID, v_x, v_y, v_t, 0, false);
+      comm = getRobotCommandMessage(botID, v_x, v_y, v_t, 0, false);
+      return comm;
     }
   }
 }

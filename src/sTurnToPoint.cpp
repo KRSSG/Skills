@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <vector>
 
+#include <ssl_common/geometry.hpp>
 namespace Strategy
 {
   gr_Robot_Command SkillSet::turnToPoint(const SParam &param, const BeliefState &state, int botID)
@@ -23,12 +24,15 @@ namespace Strategy
       else omega = MIN_BOT_OMEGA;
     }
     float v_x = omega*BOT_BALL_THRESH*1.5;
-    // comm.addCircle(botPos.x,  botPos.y, 50);
-
+    // comm.addCircle(state->homePos[botID].x,  state->homePos[botID].y, 50);
     float dist = Vector2D<int>::dist(ballPos, botPos);
     if(dist < DRIBBLER_BALL_THRESH*1.2)
+    {
       return getRobotCommandMessage(botID, v_x, 0, omega, 0, true);
+    }
     else
+    {
       return getRobotCommandMessage(botID, 0, 0, omega, 0, false);
+    }
   }
 }

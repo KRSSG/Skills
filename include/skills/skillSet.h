@@ -29,20 +29,23 @@ namespace Strategy
     static SkillSet *instance();
     enum SkillID
     {
-      // Spin,
+
+      Spin,
       Kick,
       Stop,
-      // Dribble,
-      // Velocity,
-      GoToBall,
+      Dribble,
+      Velocity,
+      GoToBall, //Add comm.addLine & comm.addCircle, logger,timer
       GoToPoint,
-      // DefendPoint,
-      // DribbleToPoint,
-      // KickToPoint,
-      // ReceiveBall,
-      TurnToPoint,
-      // TurnToAngle,
-      MAX_SKILLS
+      DefendPoint,  //comm.addcircle
+      DribbleToPoint, //comm.addCircle,logger,Util
+      ReceiveBall, //to be written
+      GoalKeeping,  //ballDestination uninitialized
+      KickToPoint,
+      TurnToPoint,  //addCircle
+      TurnToAngle,
+
+      MAX_SKILLS,
     };
 
     // Union of parameters for each skill enumerated in SkillID
@@ -110,23 +113,25 @@ namespace Strategy
 
   protected:
     typedef gr_Robot_Command (SkillSet::*skillFncPtr)(const SParam&, const BeliefState&, int );
+
     skillFncPtr        skillList[MAX_SKILLS];
   public:
     //------- List of robot skills -------//
-    // gr_Robot_Command spin(const SParam& param, const BeliefState &state, int botID);
-    gr_Robot_Command stop(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command spin(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command kick(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command dribble(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command velocity(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command stop(const SParam& param, const BeliefState &state, int botID);
+
+    gr_Robot_Command dribble(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command velocity(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command goToBall(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command goToPoint(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command defendPoint(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command dribbleToPoint(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command receiveBall(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command goalKeeping(SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command kickToPoint(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command defendPoint(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command dribbleToPoint(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command receiveBall(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command goalKeeping(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command kickToPoint(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command turnToPoint(const SParam& param, const BeliefState &state, int botID);
-    // gr_Robot_Command turnToAngle(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command turnToAngle(const SParam& param, const BeliefState &state, int botID);
   private:
     SkillSet(); // private so can't be called.
     SkillSet(SkillSet const&) {}; // copy constructor is private.
@@ -134,7 +139,7 @@ namespace Strategy
     static SkillSet* m_pInstance; // pointer to the instance.
   public:
     // Executing the skill function corresponding to the given ID and param function parameters
-    inline gr_Robot_Command executeSkill(SkillID ID, const SParam& param, const BeliefState &state, int botID)
+    inline gr_Robot_Command executeSkill(SkillID ID, SParam& param, const BeliefState &state, int botID)
     {
       return (*this.*skillList[ID])(param, state, botID);
     } // executeSkill
