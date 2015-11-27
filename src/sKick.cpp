@@ -1,9 +1,11 @@
 #include "skillSet.h"
+#include <ssl_common/grSimComm.h>
+#include <ssl_common/config.h>
 
 namespace Strategy
 {
-  void SkillSet::kick(const SParam& param)
+  gr_Robot_Command SkillSet::kick(const SParam &param, const BeliefState &state, int botID)
   {
-    comm.sendCommand(botID, 0, 0, 0, param.KickP.power, false);
+    return getRobotCommandMessage(botID, 0, 0, 0, param.KickP.power, false);
   } // kick
 }

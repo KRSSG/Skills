@@ -1,20 +1,22 @@
 #include "skillSet.h"
-#include "beliefState.h"
-#include "fieldConfig.h"
+#include <ssl_common/grSimComm.h>
+#include <ssl_common/geometry.hpp>
+#include <ssl_common/config.h>
 
 namespace Strategy
 {
-  void SkillSet::kickToPoint(const SParam &param)
+  gr_Robot_Command SkillSet::kickToPoint(const SParam &param, const BeliefState &state, int botID)
   {
+    Vector2D<int> botPos(state.homePos[botID].x, state.homePos[botID].y);
+    Vector2D<int> ballPos(state.ballPos.x, state.ballPos.y);
     Vector2D<int> destPoint(param.KickToPointP.x, param.KickToPointP.y);
-    float finalSlope = Vector2D<int>::angle(destPoint, state->homePos[botID]);
-    float turnAngleLeft = normalizeAngle(finalSlope - state->homeAngle[botID]); // Angle left to turn
-    float dist = Vector2D<int>::dist(state->ballPos, state->homePos[botID]);
+    float finalSlope = Vector2D<int>::angle(destPoint, botPos);
+    float turnAngleLeft = normalizeAngle(finalSlope - state.homePos[botID].theta); // Angle left to turn
+    float dist = Vector2D<int>::dist(ballPos, botPos);
     if(dist > BOT_BALL_THRESH)
     {
       //printf("going to ball %d, %f\n", BOT_BALL_THRESH, dist);
-      goToBall(param);
-      return;
+      return goToBall(param, state, botID);
     }
     if(fabs(turnAngleLeft) > SATISFIABLE_THETA/2)
     {
@@ -22,10 +24,9 @@ namespace Strategy
       paramt.TurnToPointP.x = destPoint.x;
       paramt.TurnToPointP.y = destPoint.y;
       paramt.TurnToPointP.max_omega = MAX_BOT_OMEGA*3;
-      turnToPoint(paramt);
-      return;
+      return turnToPoint(paramt, state, botID);
     }
     //printf("should kick now %f\n", turnAngleLeft);
-    comm.sendCommand(botID, 0, 0, 0, param.KickToPointP.power, false);
+    return getRobotCommandMessage(botID, 0, 0, 0, param.KickToPointP.power, false);
   }
 }
