@@ -34,5 +34,6 @@ namespace Strategy
     {
       return getRobotCommandMessage(botID, 0, 0, omega, 0, false);
     }
+     // return getRobotCommandMessage(botID,0,MAX_BOT_SPEED/2,0,0,true);
   }
 }

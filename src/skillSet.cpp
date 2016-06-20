@@ -42,7 +42,7 @@ namespace Strategy
     skillList[KickToPoint] = &SkillSet::kickToPoint;
     skillList[TurnToPoint] = &SkillSet::turnToPoint;
     skillList[TurnToAngle] = &SkillSet::turnToAngle;
-
+    skillList[DribbleTurn] = &SkillSet::dribbleTurn;
     // Initialization check
     for (int sID = 0; sID < MAX_SKILLS; ++sID)
     {

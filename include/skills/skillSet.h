@@ -44,6 +44,7 @@ namespace Strategy
       KickToPoint,
       TurnToPoint,  //addCircle
       TurnToAngle,
+      DribbleTurn,  //Dribble while turning
 
       MAX_SKILLS,
     };
@@ -104,6 +105,13 @@ namespace Strategy
       {
         float x;
         float y;
+        float max_omega;
+        float turn_radius;
+      } DribbleTurnP;
+      struct
+      {
+        float x;
+        float y;
         float finalslope;
         bool align;
         float finalVelocity;
@@ -132,6 +140,8 @@ namespace Strategy
     gr_Robot_Command kickToPoint(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command turnToPoint(const SParam& param, const BeliefState &state, int botID);
     gr_Robot_Command turnToAngle(const SParam& param, const BeliefState &state, int botID);
+    gr_Robot_Command dribbleTurn(const SParam &param, const BeliefState &state, int botID);
+
   private:
     SkillSet(); // private so can't be called.
     SkillSet(SkillSet const&) {}; // copy constructor is private.
