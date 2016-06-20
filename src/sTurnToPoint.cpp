@@ -17,7 +17,7 @@ namespace Strategy
 
     float finalSlope = Vector2D<int>::angle(point, botPos);
     float turnAngleLeft = normalizeAngle(finalSlope - state.homePos[botID].theta); // Angle left to turn
-    float omega = turnAngleLeft * param.TurnToPointP.max_omega / (2 * PI); // Speedup turn
+    float omega = 2.8*turnAngleLeft * param.TurnToPointP.max_omega / (2 * PI); // Speedup turn
     if(omega < MIN_BOT_OMEGA && omega > -MIN_BOT_OMEGA)
     {
       if(omega < 0) omega = -MIN_BOT_OMEGA;
@@ -26,7 +26,7 @@ namespace Strategy
     float v_x = omega*BOT_BALL_THRESH*1.5;
     // comm.addCircle(state->homePos[botID].x,  state->homePos[botID].y, 50);
     float dist = Vector2D<int>::dist(ballPos, botPos);
-    if(dist < DRIBBLER_BALL_THRESH*1.2)
+    if(dist < DRIBBLER_BALL_THRESH*4)
     {
       return getRobotCommandMessage(botID, v_x, 0, omega, 0, true);
     }

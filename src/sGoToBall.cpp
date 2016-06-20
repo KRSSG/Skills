@@ -7,15 +7,10 @@
 #include <vector>
 #include <navigation/planners.h>
 #include <navigation/controllers/waypoint.h>
-// #include "logger.h"
-// #include "timer.h"
+
 #include <ssl_common/config.h>
 #include <ssl_common/grSimComm.h>
 
-// static Util::Timer  timer;
-// extern Util::Logger logger;
-
-//Add comm.addLine & comm.addCircle
 #define POINTPREDICTIONFACTOR 2
 
 using namespace std;
@@ -25,137 +20,115 @@ namespace Strategy
   gr_Robot_Command SkillSet::goToBall(const SParam &param, const BeliefState &state, int botID)
   {
     using Navigation::obstacle;
-#if 1
-    vector<obstacle> obs;
-    for(int i = 0; i < state.homeDetected.size(); ++i)
-    {
-      if (state.homeDetected[i]) {
-        obstacle o;
-        o.x = state.homePos[i].x;
-        o.y = state.homePos[i].y;
-        o.radius = 2 * BOT_RADIUS;
-        obs.push_back(o);
-      }
-    }
-
-    for(int i = 0; i < state.awayDetected.size(); ++i)
-    {
-      if (state.awayDetected[i]) {
-        obstacle o;
-        o.x = state.awayPos[i].x;
-        o.y = state.awayPos[i].y;
-        o.radius = 2 * BOT_RADIUS;
-        obs.push_back(o);
+    #if 1
+      vector<obstacle> obs;
+      for(int i = 0; i < state.homeDetected.size(); ++i) {
+        if (state.homeDetected[i]) {
+          obstacle o;
+          o.x = state.homePos[i].x;
+          o.y = state.homePos[i].y;
+          o.radius = 2 * BOT_RADIUS;
+          obs.push_back(o);
+        }
       }
 
-    }
-    Vector2D<int> ballfinalpos;
-    ballfinalpos.x = state.ballPos.x + (state.ballVel.x / POINTPREDICTIONFACTOR);
-    ballfinalpos.y = state.ballPos.y + (state.ballVel.y / POINTPREDICTIONFACTOR);
-    Vector2D<int> point, nextWP, nextNWP;
-    Navigation::MergeSCurve pathPlanner;
-    Vector2D<int> botPos(state.homePos[botID].x, state.homePos[botID].y);
+      for(int i = 0; i < state.awayDetected.size(); ++i) {
+        if (state.awayDetected[i]) {
+          obstacle o;
+          o.x = state.awayPos[i].x;
+          o.y = state.awayPos[i].y;
+          o.radius = 2 * BOT_RADIUS;
+          obs.push_back(o);
+        }
+      }
+      
+      Vector2D<int> ballfinalpos;
+      ballfinalpos.x = state.ballPos.x + (state.ballVel.x / POINTPREDICTIONFACTOR);
+      ballfinalpos.y = state.ballPos.y + (state.ballVel.y / POINTPREDICTIONFACTOR);
+      Vector2D<int> point, nextWP, nextNWP;
+      Navigation::MergeSCurve pathPlanner;
+      Vector2D<int> botPos(state.homePos[botID].x, state.homePos[botID].y);
 
-    pathPlanner.plan(botPos,
-                      ballfinalpos,
-                      &nextWP,
-                      &nextNWP,
-                      &obs[0],
-                      obs.size(),
-                      botID,
-                      true);
-
-
-#else
+      pathPlanner.plan(botPos,
+                        ballfinalpos,
+                        &nextWP,
+                        &nextNWP,
+                        &obs[0],
+                        obs.size(),
+                        botID,
+                        true);
+    #else
     
-#endif
+    #endif
 
-#if 1
-    float motionAngle = Vector2D<int>::angle(nextWP, botPos);
-
-    float finalSlope;   // final slope the current bot motion should aim for!
-    if(nextNWP.valid())
-      finalSlope = Vector2D<int>::angle(nextNWP, nextWP);
-    else
-      finalSlope = Vector2D<int>::angle(nextWP, botPos);
-
-    float turnAngleLeft = normalizeAngle(finalSlope - state.homePos[botID].theta); // Angle left to turn
-
-    float omega = turnAngleLeft * MAX_BOT_OMEGA / (2 * PI); // Speedup turn
-    if(omega < MIN_BOT_OMEGA && omega > -MIN_BOT_OMEGA)
-    {
-      if(omega < 0) omega = -MIN_BOT_OMEGA;
+    #if 1
+    
+    Vector2D<int> ballPos(state.ballPos.x, state.ballPos.y);    
+    float dist = Vector2D<int>::dist(botPos, ballPos);
+    float maxDisToTurn = dist - 3.5f * BOT_BALL_THRESH;
+    float angleToTurn = normalizeAngle(Vector2D<int>::angle(ballPos, botPos) - (state.homePos[botID].theta)); 
+    
+    float minReachTime = maxDisToTurn / MAX_BOT_SPEED;
+    float maxReachTime = maxDisToTurn / MIN_BOT_SPEED;
+    
+    float minTurnTime = angleToTurn / MAX_BOT_OMEGA;
+    float maxTurnTime = angleToTurn / MIN_BOT_OMEGA;
+    
+    float speed = 0.0f;
+    float omega = angleToTurn * MAX_BOT_OMEGA / (2 * PI);
+    
+    if (omega < MIN_BOT_OMEGA && omega > -MIN_BOT_OMEGA) {
+      if (omega < 0) omega = -MIN_BOT_OMEGA;
       else omega = MIN_BOT_OMEGA;
     }
 
-    float dist = Vector2D<int>::dist(nextWP, botPos);  // Distance of next waypoint from the bot
-    float theta =  motionAngle - state.homePos[botID].theta;               // Angle of dest with respect to bot's frame of reference
-
-    float profileFactor = (dist * 4 / MAX_FIELD_DIST) * MAX_BOT_SPEED;
-
-    if(profileFactor < MIN_BOT_SPEED && dist > BOT_BALL_THRESH)
-      profileFactor = MIN_BOT_SPEED;
-    else if(profileFactor > MAX_BOT_SPEED)
-      profileFactor = MAX_BOT_SPEED;
-#ifdef GR_SIM_COMM
-    if(dist < BOT_BALL_THRESH * 5)
-      profileFactor = dist / MAX_FIELD_DIST * MAX_BOT_SPEED;
-#endif
-    if(param.GoToBallP.intercept == false)
-    {
-      if (dist < DRIBBLER_BALL_THRESH)
-      {
-        if(dist < BOT_BALL_THRESH)
-        {
-          if((turnAngleLeft) > -DRIBBLER_BALL_ANGLE_RANGE  && (turnAngleLeft) < DRIBBLER_BALL_ANGLE_RANGE)
-          {
-//            printf("not moving\n");
-            return getRobotCommandMessage(botID, 0, 0, 0, 0, true);
-          }
-          else
-          {
-//            printf("turning\n");
-            return getRobotCommandMessage(botID, 0, 0, omega, 0, true);
-          }
-        }
-        else
-        {
-          // Make the dribbler on
-//				if ((turnAngleLeft > -DRIBBLER_BALL_ANGLE_RANGE) && (turnAngleLeft < DRIBBLER_BALL_ANGLE_RANGE))
-//				{
-//          printf("not moving");
-//					return getRobotCommandMessage(botID, 0, 0, 0, 0, true);
-//				}
-//				else
-          {
-//            printf("Moving: %f, %f\n", profileFactor, omega);
-            return getRobotCommandMessage(botID, profileFactor * sin(-theta), profileFactor * cos(-theta), omega, 0, true);
-          }
-        }
+    if(maxDisToTurn > 0) {
+      if(minTurnTime > maxReachTime) {
+        speed = MIN_BOT_SPEED;
       }
-      else
-      {
-//        printf("Moving: %f, %f\n", profileFactor, omega);
-        return getRobotCommandMessage(botID, profileFactor * sin(-theta), profileFactor * cos(-theta), omega, 0, false);
+      else if (minReachTime > maxTurnTime) {
+        speed = MAX_BOT_SPEED;
+      }
+      else if(minReachTime < minTurnTime) {
+        speed =  maxDisToTurn / minTurnTime;
+      }
+      else if (minTurnTime < minReachTime) {
+        speed = MAX_BOT_SPEED;
       }
     }
-    else
-    {
-      if(dist > BOT_BALL_THRESH)
-      {
-//        printf("Moving: %f, %f\n", profileFactor, omega);
-        return getRobotCommandMessage(botID, profileFactor * sin(-theta), profileFactor * cos(-theta), 0, 0, false);
+    else {
+      speed = dist / MAX_FIELD_DIST * MAX_BOT_SPEED;
+    }
+
+    float motionAngle = Vector2D<int>::angle(nextWP, botPos);
+    float theta =  motionAngle - state.homePos[botID].theta;
+
+    if(param.GoToBallP.intercept == false) {
+      if (dist < DRIBBLER_BALL_THRESH) {
+        if(dist < 1.2*BOT_BALL_THRESH) {          
+          return getRobotCommandMessage(botID, 0, 0, 0, 0, true);
+        }
+        else {
+          return getRobotCommandMessage(botID, speed * sin(-theta), speed * cos(-theta), omega, 0, true);
+        }
       }
-      else
-      {
-//        printf("Moving: %f, %f\n", profileFactor, omega);
+      else {
+        return getRobotCommandMessage(botID, speed * sin(-theta), speed * cos(-theta), omega, 0, false);
+      }
+    }
+    else {
+      if (dist > BOT_BALL_THRESH) {
+        return getRobotCommandMessage(botID, speed * sin(-theta), speed * cos(-theta), 0, 0, false);
+      }
+      else {
         return getRobotCommandMessage(botID, 0, 0, 0, 0, true);
       }
 
     }
-
-#else
-    return getRobotCommandMessage(botID, 0, 0, 0, 0, false);
-#endif
-  } // goToBall
+    
+       
+  #else
+  
+  #endif
+  }
 }
