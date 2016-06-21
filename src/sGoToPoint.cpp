@@ -92,8 +92,8 @@ namespace Strategy
           obstacle o;
           o.x = state.awayPos[i].x;
           o.y = state.awayPos[i].y;
-          o.radius = 2 * BOT_RADIUS;
-          obs.push_back(o);
+          o.radius = 2.5 * BOT_RADIUS;
+         obs.push_back(o);
         }
       }
       

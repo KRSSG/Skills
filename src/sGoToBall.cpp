@@ -106,6 +106,7 @@ namespace Strategy
     if(param.GoToBallP.intercept == false) {
       if (dist < DRIBBLER_BALL_THRESH) {
         if(dist < 1.2*BOT_BALL_THRESH) {          
+
           return getRobotCommandMessage(botID, 0, 0, 0, 0, true);
         }
         else {
@@ -132,3 +133,4 @@ namespace Strategy
   #endif
   }
 }
+
