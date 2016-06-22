@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -85,8 +86,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES skills
- CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+ CATKIN_DEPENDS roscpp rospy std_msgs krssg_ssl_msgs
+  DEPENDS system_lib
 )
 
 ###########
@@ -165,6 +166,8 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(include
                     include/skills
@@ -192,12 +195,29 @@ set(skillsSrc
    )
 # sources
 
+set(QT_USE_QTNETWORK TRUE)
+find_package(Qt REQUIRED)
+include(${QT_USE_FILE})
+list(APPEND libs ${QT_LIBRARIES})
+
 set(src 
     ${skillsSrc}
     src/skillSet.cpp)
 
+find_package(Protobuf REQUIRED)
+protobuf_generate_cpp(PROTO_CPP PROTO_H
+    ../grsim_comm/include/proto/messages_robocup_ssl_detection.proto
+    ../grsim_comm/include/proto/messages_robocup_ssl_geometry.proto
+    ../grsim_comm/include/proto/messages_robocup_ssl_wrapper.proto
+    ../grsim_comm/include/proto/messages_robocup_ssl_refbox_log.proto
+    ../grsim_comm/include/proto/grSim_Replacement.proto
+    ../grsim_comm/include/proto/grSim_Commands.proto
+    ../grsim_comm/include/proto/grSim_Packet.proto
+    ../grsim_comm/include/proto/sslDebug_Data.proto
+)
+
 add_library(skills ${src})
-target_link_libraries(skills ${catkin_LIBRARIES})
+target_link_libraries(skills ${catkin_LIBRARIES} ${PROTOBUF_LIBRARIES} ${QT_LIBRARIES})
 
 # for installilng the library so it can be used by other packages
 install(TARGETS skills
